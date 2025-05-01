@@ -1,5 +1,5 @@
 
-const words = ["OFFICE", "PAPER", "PEN", "DESK", "NOTES"];
+const words = ["OFFICE", "PAPER", "PEN", "DESK", "CHAIR", "MOUSE", "MARKER", "PRINTER"];
 const spangram = "OFFICE";
 const gridLetters = ['T', 'N', 'R', 'P', 'K', 'S', 'E', 'I', 'P', 'E', 'R', 'E', 'R', 'A', 'A', 'H', 'C', 'D', 'P', 'I', 'R', 'P', 'E', 'N', 'P', 'K', 'S', 'E', 'C', 'E', 'O', 'T', 'D', 'I', 'M', 'O', 'O', 'F', 'F', 'R', 'U', 'S', 'R', 'E', 'K', 'A', 'M', 'E'];
 const rows = 8;
@@ -23,44 +23,50 @@ function drawGrid() {
 }
 
 function handleTap(cell) {
-  const alreadySelected = selected.includes(cell);
-  const last = selected[selected.length - 1];
+  if (cell.classList.contains("found") || cell.classList.contains("found-spangram")) return;
 
-  if (alreadySelected && cell === last) {
-    cell.classList.remove("selected");
-    selected.pop();
-  } else if (!alreadySelected) {
-    if (selected.length === 0 || isAdjacent(cell, last)) {
-      cell.classList.add("selected");
-      selected.push(cell);
-    }
-  } else {
-    selected.forEach(c => c.classList.remove("selected"));
-    selected = [];
+  const r = parseInt(cell.dataset.row);
+  const c = parseInt(cell.dataset.col);
+
+  if (selected.length === 0) {
+    selected.push(cell);
+    cell.classList.add("selected");
+    return;
   }
 
-  if (selected.length > 0) {
-    const word = selected.map(c => c.textContent).join("");
-    const reversed = selected.map(c => c.textContent).reverse().join("");
-    const norm = word.toUpperCase();
-    const revNorm = reversed.toUpperCase();
+  const r0 = parseInt(selected[0].dataset.row);
+  const c0 = parseInt(selected[0].dataset.col);
 
-    if (words.includes(norm) || words.includes(revNorm)) {
+  const dr = r - r0;
+  const dc = c - c0;
+
+  const len = selected.length;
+  const nextRow = r0 + (len * Math.sign(dr));
+  const nextCol = c0 + (len * Math.sign(dc));
+
+  if (parseInt(cell.dataset.row) === nextRow && parseInt(cell.dataset.col) === nextCol) {
+    selected.push(cell);
+    cell.classList.add("selected");
+
+    const word = selected.map(c => c.textContent).join("").toUpperCase();
+    const revWord = selected.map(c => c.textContent).reverse().join("").toUpperCase();
+
+    if (words.includes(word) || words.includes(revWord)) {
       selected.forEach(c => {
-        c.classList.add(norm === spangram ? "found-spangram" : "found");
         c.classList.remove("selected");
+        c.classList.add(word === spangram || revWord === spangram ? "found-spangram" : "found");
       });
-      foundWords.push(norm);
+      foundWords.push(word);
       selected = [];
     }
+  } else {
+    resetSelection();
   }
 }
 
-function isAdjacent(cell1, cell2) {
-  if (!cell1 || !cell2) return false;
-  const r1 = parseInt(cell1.dataset.row), c1 = parseInt(cell1.dataset.col);
-  const r2 = parseInt(cell2.dataset.row), c2 = parseInt(cell2.dataset.col);
-  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
+function resetSelection() {
+  selected.forEach(c => c.classList.remove("selected"));
+  selected = [];
 }
 
 drawGrid();

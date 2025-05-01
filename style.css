@@ -2,33 +2,27 @@
 body {
   font-family: sans-serif;
   text-align: center;
-  background: #f9f9f9;
-  margin: 0;
   padding: 20px;
-}
-h1 {
-  margin: 10px 0;
+  background: #f9f9f9;
 }
 #grid {
   display: grid;
   grid-template-columns: repeat(6, 45px);
   grid-template-rows: repeat(8, 45px);
-  justify-content: center;
   gap: 5px;
+  justify-content: center;
   margin: 20px auto;
 }
 .cell {
   background: #fff;
   border: 2px solid #ccc;
+  border-radius: 5px;
   font-size: 20px;
   font-weight: bold;
   line-height: 45px;
-  user-select: none;
-  border-radius: 5px;
 }
 .cell.selected {
   background: #cce5ff;
-  border-color: #3399ff;
 }
 .cell.found {
   background: #b3e5fc;
