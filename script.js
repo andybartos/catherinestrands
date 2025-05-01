@@ -7,7 +7,6 @@ const cols = 6;
 
 let selected = [];
 let foundWords = [];
-let isTouching = false;
 
 function drawGrid() {
   const grid = document.getElementById("grid");
@@ -18,60 +17,15 @@ function drawGrid() {
     cell.dataset.index = i;
     cell.dataset.row = Math.floor(i / cols);
     cell.dataset.col = i % cols;
-    cell.addEventListener("mousedown", () => startSelect(cell));
-    cell.addEventListener("mouseenter", () => isTouching && toggleSelect(cell));
-    cell.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (target && target.classList.contains("cell")) {
-        startSelect(target);
-      }
-    }, { passive: false });
-    cell.addEventListener("touchmove", (e) => {
-      const touch = e.touches[0];
-      const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (target && target.classList.contains("cell")) {
-        toggleSelect(target);
-      }
-    });
+    cell.addEventListener("click", () => handleTap(cell));
     grid.appendChild(cell);
   }
-
-  document.body.addEventListener("mouseup", endSelect);
-  document.body.addEventListener("touchend", endSelect);
 }
 
-function startSelect(cell) {
-  isTouching = true;
-  toggleSelect(cell);
-}
-
-function endSelect() {
-  if (selected.length > 0) {
-    const word = selected.map(cell => cell.textContent).join("");
-    const reversed = selected.map(cell => cell.textContent).reverse().join("");
-    const normalized = word.toUpperCase();
-    const normalizedRev = reversed.toUpperCase();
-    const isFound = words.includes(normalized) || words.includes(normalizedRev);
-
-    if (isFound) {
-      selected.forEach(cell => {
-        cell.classList.add(normalized === spangram ? "found-spangram" : "found");
-        cell.classList.remove("selected");
-      });
-      foundWords.push(normalized);
-    } else {
-      selected.forEach(cell => cell.classList.remove("selected"));
-    }
-    selected = [];
-  }
-  isTouching = false;
-}
-
-function toggleSelect(cell) {
+function handleTap(cell) {
   const alreadySelected = selected.includes(cell);
   const last = selected[selected.length - 1];
+
   if (alreadySelected && cell === last) {
     cell.classList.remove("selected");
     selected.pop();
@@ -79,6 +33,25 @@ function toggleSelect(cell) {
     if (selected.length === 0 || isAdjacent(cell, last)) {
       cell.classList.add("selected");
       selected.push(cell);
+    }
+  } else {
+    selected.forEach(c => c.classList.remove("selected"));
+    selected = [];
+  }
+
+  if (selected.length > 0) {
+    const word = selected.map(c => c.textContent).join("");
+    const reversed = selected.map(c => c.textContent).reverse().join("");
+    const norm = word.toUpperCase();
+    const revNorm = reversed.toUpperCase();
+
+    if (words.includes(norm) || words.includes(revNorm)) {
+      selected.forEach(c => {
+        c.classList.add(norm === spangram ? "found-spangram" : "found");
+        c.classList.remove("selected");
+      });
+      foundWords.push(norm);
+      selected = [];
     }
   }
 }
