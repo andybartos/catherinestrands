@@ -1,12 +1,10 @@
 
-const words = ["OFFICE", "PAPER", "PEN", "DESK", "CHAIR", "MOUSE", "MARKER", "PRINTER"];
+const words = ['OFFICE', 'PRINTER', 'PAPER', 'MOUSE', 'DESK', 'PEN', 'CHAIR', 'MARKER'];
 const spangram = "OFFICE";
 const gridLetters = ['T', 'N', 'R', 'P', 'K', 'S', 'E', 'I', 'P', 'E', 'R', 'E', 'R', 'A', 'A', 'H', 'C', 'D', 'P', 'I', 'R', 'P', 'E', 'N', 'P', 'K', 'S', 'E', 'C', 'E', 'O', 'T', 'D', 'I', 'M', 'O', 'O', 'F', 'F', 'R', 'U', 'S', 'R', 'E', 'K', 'A', 'M', 'E'];
 const rows = 8;
 const cols = 6;
-
 let selected = [];
-let foundWords = [];
 
 function drawGrid() {
   const grid = document.getElementById("grid");
@@ -17,56 +15,63 @@ function drawGrid() {
     cell.dataset.index = i;
     cell.dataset.row = Math.floor(i / cols);
     cell.dataset.col = i % cols;
-    cell.addEventListener("click", () => handleTap(cell));
+    cell.addEventListener("touchstart", startSelection, { passive: false });
+    cell.addEventListener("mousedown", startSelection);
     grid.appendChild(cell);
   }
+  document.addEventListener("touchmove", handleTouchMove, { passive: false });
+  document.addEventListener("touchend", endSelection);
+  document.addEventListener("mouseup", endSelection);
 }
 
-function handleTap(cell) {
-  if (cell.classList.contains("found") || cell.classList.contains("found-spangram")) return;
+function startSelection(e) {
+  e.preventDefault();
+  clearSelection();
+  const target = e.target.closest(".cell");
+  if (target) selectCell(target);
+}
 
-  const r = parseInt(cell.dataset.row);
-  const c = parseInt(cell.dataset.col);
-
-  if (selected.length === 0) {
-    selected.push(cell);
-    cell.classList.add("selected");
-    return;
+function handleTouchMove(e) {
+  const touch = e.touches[0];
+  const target = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (target && target.classList.contains("cell")) {
+    const last = selected[selected.length - 1];
+    if (!selected.includes(target) && isAdjacent(last, target)) {
+      selectCell(target);
+    }
   }
+}
 
-  const r0 = parseInt(selected[0].dataset.row);
-  const c0 = parseInt(selected[0].dataset.col);
+function selectCell(cell) {
+  cell.classList.add("selected");
+  selected.push(cell);
+}
 
-  const dr = r - r0;
-  const dc = c - c0;
-
-  const len = selected.length;
-  const nextRow = r0 + (len * Math.sign(dr));
-  const nextCol = c0 + (len * Math.sign(dc));
-
-  if (parseInt(cell.dataset.row) === nextRow && parseInt(cell.dataset.col) === nextCol) {
-    selected.push(cell);
-    cell.classList.add("selected");
-
+function endSelection() {
+  if (selected.length > 0) {
     const word = selected.map(c => c.textContent).join("").toUpperCase();
-    const revWord = selected.map(c => c.textContent).reverse().join("").toUpperCase();
-
-    if (words.includes(word) || words.includes(revWord)) {
+    const reverse = selected.map(c => c.textContent).reverse().join("").toUpperCase();
+    if (words.includes(word) || words.includes(reverse)) {
       selected.forEach(c => {
         c.classList.remove("selected");
-        c.classList.add(word === spangram || revWord === spangram ? "found-spangram" : "found");
+        c.classList.add((word === spangram || reverse === spangram) ? "found-spangram" : "found");
       });
-      foundWords.push(word);
-      selected = [];
+    } else {
+      selected.forEach(c => c.classList.remove("selected"));
     }
-  } else {
-    resetSelection();
   }
+  selected = [];
 }
 
-function resetSelection() {
+function clearSelection() {
   selected.forEach(c => c.classList.remove("selected"));
   selected = [];
+}
+
+function isAdjacent(a, b) {
+  const r1 = parseInt(a.dataset.row), c1 = parseInt(a.dataset.col);
+  const r2 = parseInt(b.dataset.row), c2 = parseInt(b.dataset.col);
+  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
 }
 
 drawGrid();

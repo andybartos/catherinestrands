@@ -2,24 +2,25 @@
 body {
   font-family: sans-serif;
   text-align: center;
+  background: #f8f8f8;
   padding: 20px;
-  background: #f9f9f9;
 }
 #grid {
   display: grid;
   grid-template-columns: repeat(6, 45px);
   grid-template-rows: repeat(8, 45px);
-  gap: 5px;
   justify-content: center;
-  margin: 20px auto;
+  gap: 5px;
+  margin-top: 20px;
 }
 .cell {
-  background: #fff;
+  background: white;
   border: 2px solid #ccc;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 20px;
   font-weight: bold;
   line-height: 45px;
+  user-select: none;
 }
 .cell.selected {
   background: #cce5ff;
